@@ -102,7 +102,7 @@ def delete_existing(kibana_server, kibana_auth, es_host, workflow_name):
             print(e)        
                 
 
-def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy):
+def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy, snow_host, snow_authbasic):
 
     directory_path = "workflows"
     target_extension = ".yaml"
@@ -131,7 +131,8 @@ def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy):
                         parsed['consts']['es_host'] = es_host    
                         parsed['consts']['ai_connector'] = ai_connector   
                         parsed['consts']['ai_proxy'] = ai_proxy  
-                                                 
+                        parsed['consts']['snow_host'] = snow_host   
+                        parsed['consts']['snow_authbasic'] = f"Basic {snow_authbasic}"                  
                         
                         yaml = MyYAML()
                         yaml.width = float("inf") # Set the width attribute of the YAML instance
@@ -220,6 +221,8 @@ def run_setup(kibana_server, kibana_auth, es_host):
 @click.option('--es_host', default="", help='address of elasticsearch server')
 @click.option('--es_apikey', default="", help='apikey for auth')
 @click.option('--es_authbasic', default="", help='basic for auth')
+@click.option('--snow_host', default="", help='snow host')
+@click.option('--snow_authbasic', default="", help='basic for auth')
 @click.option('--ai_connector', default="Elastic-Managed-LLM", help='ai connector id')
 @click.option('--ai_proxy', default="https://tbekiares-demo-aiassistantv2-1059491012611.us-central1.run.app", help='ai proxy host')
 @click.argument('action')
@@ -235,7 +238,12 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
         es_host = config['elasticsearch_es_endpoint']
     if es_apikey == "" and es_authbasic == "":
         es_apikey = config['elasticsearch_api_key']
-       
+
+    if snow_host == "":
+        snow_host = config['snow_host']
+    if snow_apikey == "" and es_authbasic == "":
+        snow_authbasic = config['snow_authbasic']
+
     if es_authbasic != "":
         auth = f"Basic {es_authbasic}"
     else:
@@ -243,7 +251,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
     
     if action == 'load_workflows':
         print("LOADING WORKFLOWS")
-        load_workflows(kibana_host, auth, es_host, ai_connector, ai_proxy)
+        load_workflows(kibana_host, auth, es_host, ai_connector, ai_proxy, snow_host, snow_authbasic)
         run_setup(kibana_host, auth, es_host)
     elif action == 'load_alerts':
         load_rules(kibana_host, auth, es_host)

@@ -43,7 +43,7 @@ steps:
       Authorization: '{{ consts.kbn_auth }}'
       Content-Type: application/json
     method: GET
-    timeout: 30s
+    timeout: 5s
     url: '{{ consts.es_host }}/workflow_config/_doc/alert_process'
 - name: alert_process_status
   type: http

@@ -140,8 +140,12 @@ steps:
         | WHERE k8s.namespace.name == "{{ steps.rca1.output.data.result.k8s_namespace }}"
         {% endif %}
         | WHERE TO_UPPER(log.level) IN ("WARN", "WARNING", "SEVERE", "FATAL", "ERROR") OR TO_UPPER(message) LIKE "* ERROR *"
-        | STATS num = COUNT() BY pattern = CATEGORIZE(message), service.name
-        | SORT num DESC
+        | STATS cnt = COUNT() BY pattern = CATEGORIZE(message), service.name
+        | WHERE pattern IS NOT NULL
+        | INLINE STATS top_cnt = TOP(cnt, 5, "desc") BY service.name
+        | WHERE cnt >= LEAST(top_cnt)
+        | SORT service.name, cnt DESC
+        | KEEP service.name, cnt, pattern
         | LIMIT 1000
     headers:
       Authorization: '{{ consts.kbn_auth }}'

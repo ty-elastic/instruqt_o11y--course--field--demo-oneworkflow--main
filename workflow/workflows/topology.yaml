@@ -6,8 +6,8 @@ consts:
   kbn_auth: TBD
   kbn_host: TBD
   topology_lookback_time: 1h
-  snow_host: https://dev197057.service-now.com
-  snow_auth: Basic YWRtaW46Tmk4bmZRREcqOGVA
+  snow_host: TBD
+  snow_auth: TBD
 name: topology
 enabled: true
 version: '1'
