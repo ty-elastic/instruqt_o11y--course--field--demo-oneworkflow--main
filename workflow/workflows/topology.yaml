@@ -84,90 +84,90 @@ steps:
       type: if
       condition: 'not consts.snow_host : TBD'
       steps:
-        - name: get_snow_service
-          type: http
-          with:
-            headers:
-              Authorization: '{{ consts.snow_auth }}'
-              Accept: application/json
-            method: GET
-            url: "{{ consts.snow_host }}/api/now/cmdb/csdm/app_service/find_service?name={{ foreach.item['service.name']}}"
-          on-failure:
-            continue: true
+      - name: get_snow_service
+        type: http
+        with:
+          headers:
+            Authorization: '{{ consts.snow_auth }}'
+            Accept: application/json
+          method: GET
+          url: "{{ consts.snow_host }}/api/now/cmdb/csdm/app_service/find_service?name={{ foreach.item['service.name']}}"
+        on-failure:
+          continue: true
 
-        - name: create_snow_service
-          type: if
-          condition: 'not steps.get_snow_service.output.data.result.services[0].number : *'
-          steps:
+      - name: create_snow_service
+        type: if
+        condition: 'not steps.get_snow_service.output.data.result.services[0].number : *'
+        steps:
               # create snow services
-          - name: update_snow_service
-            type: http
-            with:
-              headers:
-                Authorization: '{{ consts.snow_auth }}'
-                Accept: application/json
-              method: POST
-              url: '{{ consts.snow_host }}/api/now/cmdb/csdm/app_service/register_service'
-              body:
-                basic_details:
-                  environemnt: Production
-                  name: "{{ foreach.item['service.name']}}"
-                  version: '1.0'
-            on-failure:
-              continue: true
-
-        - name: get_snow_service2
+        - name: update_snow_service
           type: http
           with:
             headers:
               Authorization: '{{ consts.snow_auth }}'
               Accept: application/json
-            method: GET
-            url: '{{ consts.snow_host }}/api/now/table/cmdb_ci_service_auto/{{steps.get_snow_service.output.data.result.services[0].sys_id}}'
+            method: POST
+            url: '{{ consts.snow_host }}/api/now/cmdb/csdm/app_service/register_service'
+            body:
+              basic_details:
+                environemnt: Production
+                name: "{{ foreach.item['service.name']}}"
+                version: '1.0'
           on-failure:
             continue: true
 
-        - name: get_snow_service3
-          type: http
-          with:
-            headers:
-              Authorization: '{{ consts.snow_auth }}'
-              Accept: application/json
-            method: GET
-            url: '{{ steps.get_snow_service2.output.data.result.owned_by.link}}'
-          on-failure:
-            continue: true
+      - name: get_snow_service2
+        type: http
+        with:
+          headers:
+            Authorization: '{{ consts.snow_auth }}'
+            Accept: application/json
+          method: GET
+          url: '{{ consts.snow_host }}/api/now/table/cmdb_ci_service_auto/{{steps.get_snow_service.output.data.result.services[0].sys_id}}'
+        on-failure:
+          continue: true
 
-        - name: get_snow_service4
-          type: http
-          with:
-            headers:
-              Authorization: '{{ consts.snow_auth }}'
-              Accept: application/json
-            method: GET
-            url: '{{ steps.get_snow_service2.output.data.result.support_group.link}}'
-          on-failure:
-            continue: true
+      - name: get_snow_service3
+        type: http
+        with:
+          headers:
+            Authorization: '{{ consts.snow_auth }}'
+            Accept: application/json
+          method: GET
+          url: '{{ steps.get_snow_service2.output.data.result.owned_by.link}}'
+        on-failure:
+          continue: true
 
-        - name: store_cmdb_service
-          type: http
-          with:
-            body: |
-              {
-                "service.environment" : "{{ steps.foreach_environment.item }}", 
-                "service.name" : "{{ foreach.item['service.name']}}"
-                {% if steps.get_snow_service.output.data.result.services.size > 0 %}
-                ,"cmdb_owner": "{{ steps.get_snow_service3.output.data.result.user_name}}",
-                "cmdb_support_group": "{{ steps.get_snow_service4.output.data.result.name}}",
-                "cmdb_id": "{{ steps.get_snow_service.output.data.result.services[0].number}}"
-                {% endif %}
-              }
-            headers:
-              Authorization: '{{ consts.kbn_auth }}'
-              Content-Type: application/json
-            method: PUT
-            timeout: 30s
-            url: "{{ consts.es_host }}/workflow_cmdb/_doc/{{ foreach.item['service.name']}}"
+      - name: get_snow_service4
+        type: http
+        with:
+          headers:
+            Authorization: '{{ consts.snow_auth }}'
+            Accept: application/json
+          method: GET
+          url: '{{ steps.get_snow_service2.output.data.result.support_group.link}}'
+        on-failure:
+          continue: true
+
+    - name: store_cmdb_service
+      type: http
+      with:
+        body: |
+          {
+            "service.environment" : "{{ steps.foreach_environment.item }}", 
+            "service.name" : "{{ foreach.item['service.name']}}"
+            {% if steps.get_snow_service.output.data.result.services.size > 0 %}
+            ,"cmdb_owner": "{{ steps.get_snow_service3.output.data.result.user_name}}",
+            "cmdb_support_group": "{{ steps.get_snow_service4.output.data.result.name}}",
+            "cmdb_id": "{{ steps.get_snow_service.output.data.result.services[0].number}}"
+            {% endif %}
+          }
+        headers:
+          Authorization: '{{ consts.kbn_auth }}'
+          Content-Type: application/json
+        method: PUT
+        timeout: 30s
+        url: "{{ consts.es_host }}/workflow_cmdb/_doc/{{ foreach.item['service.name']}}"
 
   - name: host_names
     type: http
@@ -229,3 +229,4 @@ steps:
       method: POST
       timeout: 30s
       url: '{{ consts.es_host }}/workflow_topology/_doc'
+

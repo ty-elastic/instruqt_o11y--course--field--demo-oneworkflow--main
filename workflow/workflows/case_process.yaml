@@ -139,13 +139,12 @@ steps:
         {% if steps.rca1.output.data.result.k8s_namespace != 'NOT_AVAILABLE' %}
         | WHERE k8s.namespace.name == "{{ steps.rca1.output.data.result.k8s_namespace }}"
         {% endif %}
-        | WHERE TO_UPPER(log.level) IN ("WARN", "WARNING", "SEVERE", "FATAL", "ERROR") OR TO_UPPER(message) LIKE "* ERROR *"
-        | STATS cnt = COUNT() BY pattern = CATEGORIZE(message), service.name
+        | WHERE TO_UPPER(log.level) IN ("WARN", "WARNING", "SEVERE", "FATAL", "ERROR") OR TO_UPPER(message) LIKE "*ERROR*" OR TO_UPPER(message) LIKE "*FAIL*" OR TO_UPPER(message) LIKE "*PROBLEM*"
+        | STATS pattern_count = COUNT() BY pattern = CATEGORIZE(message), service.name
         | WHERE pattern IS NOT NULL
-        | INLINE STATS top_cnt = TOP(cnt, 5, "desc") BY service.name
-        | WHERE cnt >= LEAST(top_cnt)
-        | SORT service.name, cnt DESC
-        | KEEP service.name, cnt, pattern
+        | INLINE STATS top_count = TOP(pattern_count, 5, "desc") BY service.name
+        | WHERE pattern_count >= LEAST(top_count)
+        | SORT service.name, pattern_count
         | LIMIT 1000
     headers:
       Authorization: '{{ consts.kbn_auth }}'

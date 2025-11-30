@@ -63,7 +63,11 @@ def backup_workflows(kibana_server, kibana_auth):
                     parsed['consts']['ai_connector'] = 'TBD'   
                 if 'ai_proxy' in parsed['consts']:
                     parsed['consts']['ai_proxy'] = 'TBD'  
-                                        
+                if 'snow_host' in parsed['consts']:
+                    parsed['consts']['snow_host'] = 'TBD'  
+                if 'snow_auth' in parsed['consts']:
+                    parsed['consts']['snow_auth'] = 'TBD'  
+
             yaml = MyYAML()
             yaml.width = float("inf") # Set the width attribute of the YAML instance
 
@@ -102,7 +106,7 @@ def delete_existing(kibana_server, kibana_auth, es_host, workflow_name):
             print(e)        
                 
 
-def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy, snow_host, snow_authbasic):
+def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy, snow_host, snow_auth):
 
     directory_path = "workflows"
     target_extension = ".yaml"
@@ -132,7 +136,7 @@ def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy, 
                         parsed['consts']['ai_connector'] = ai_connector   
                         parsed['consts']['ai_proxy'] = ai_proxy  
                         parsed['consts']['snow_host'] = snow_host   
-                        parsed['consts']['snow_authbasic'] = f"Basic {snow_authbasic}"                  
+                        parsed['consts']['snow_auth'] = snow_auth              
                         
                         yaml = MyYAML()
                         yaml.width = float("inf") # Set the width attribute of the YAML instance
@@ -221,12 +225,12 @@ def run_setup(kibana_server, kibana_auth, es_host):
 @click.option('--es_host', default="", help='address of elasticsearch server')
 @click.option('--es_apikey', default="", help='apikey for auth')
 @click.option('--es_authbasic', default="", help='basic for auth')
-@click.option('--snow_host', default="", help='snow host')
-@click.option('--snow_authbasic', default="", help='basic for auth')
+@click.option('--snow_host', default="TBD", help='snow host')
+@click.option('--snow_authbasic', default="TBD", help='basic for auth')
 @click.option('--ai_connector', default="Elastic-Managed-LLM", help='ai connector id')
 @click.option('--ai_proxy', default="https://tbekiares-demo-aiassistantv2-1059491012611.us-central1.run.app", help='ai proxy host')
 @click.argument('action')
-def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, action):
+def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, action, snow_host, snow_authbasic):
     
     config = dotenv_values()
     for key, value in config.items():
@@ -239,10 +243,14 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
     if es_apikey == "" and es_authbasic == "":
         es_apikey = config['elasticsearch_api_key']
 
-    if snow_host == "":
+    if snow_host == "TBD" and 'snow_host' in config:
         snow_host = config['snow_host']
-    if snow_apikey == "" and es_authbasic == "":
+    if snow_authbasic == "TBD" and 'snow_authbasic' in config:
         snow_authbasic = config['snow_authbasic']
+    if snow_authbasic != "TBD":
+        snow_auth = f"Basic {snow_authbasic}"
+    else:
+        snow_auth = "TBD"
 
     if es_authbasic != "":
         auth = f"Basic {es_authbasic}"
@@ -251,7 +259,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
     
     if action == 'load_workflows':
         print("LOADING WORKFLOWS")
-        load_workflows(kibana_host, auth, es_host, ai_connector, ai_proxy, snow_host, snow_authbasic)
+        load_workflows(kibana_host, auth, es_host, ai_connector, ai_proxy, snow_host, snow_auth)
         run_setup(kibana_host, auth, es_host)
     elif action == 'load_alerts':
         load_rules(kibana_host, auth, es_host)
