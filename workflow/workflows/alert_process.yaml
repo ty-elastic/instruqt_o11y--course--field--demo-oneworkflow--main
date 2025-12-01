@@ -209,7 +209,7 @@ steps:
         - '@timestamp': now
           message:
             content: |
-              Create an incident case for handling this new alert. Output a field called 'title' that summarizes the attached alert in a few words, a field called 'trigger' that provides a detailed summary of the alert, and a field called 'severity' with a value of 'low', 'medium', 'high', or 'critical' based on an initial analysis of the alert.
+              Output a field called 'title' that summarizes the attached alert in a few words, a field called 'trigger' that provides a detailed summary of the alert, and a field called 'severity' with a value of 'low', 'medium', 'high', or 'critical' based on an initial analysis of the alert.
             role: user
         persist: false
       headers:

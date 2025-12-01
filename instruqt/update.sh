@@ -31,6 +31,10 @@ for dir in ./tracks/*/; do
         cd ../workflow
         ./build.sh
         cd ../instruqt
+
+        cd ../remote
+        ./build.sh
+        cd ../instruqt
       fi
 
       cd tracks/$current_course

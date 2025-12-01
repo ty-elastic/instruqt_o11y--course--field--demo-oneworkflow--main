@@ -40,8 +40,8 @@ def get_deployments(namespace):
     ret = apps_api.list_namespaced_deployment(namespace)
     deployments = {}
     for item in ret.items:
+        print(item.metadata.name)
         if 'kubectl.kubernetes.io/last-applied-configuration' in item.metadata.annotations:
-            print(item.metadata.name)
             deployments[item.metadata.name] = json.loads(item.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'])
         
     return deployments
@@ -62,21 +62,30 @@ def add_deployment(namespace, body):
     return apps_api.create_namespaced_deployment(body=body, namespace=namespace)
 
 def restart_deployment(namespace, name):
-    now = datetime.datetime.utcnow()
-    now = str(now.isoformat("T") + "Z")
-    body = {
-        'spec': {
-            'template':{
-                'metadata': {
-                    'annotations': {
-                        'kubectl.kubernetes.io/restartedAt': now
-                    }
-                }
-            }
-        }
-    }
-    return apps_api.patch_namespaced_deployment(name, namespace, body, pretty='true')
 
+    print(namespace)
+    # Get the current Deployment object
+    deployment = apps_api.read_namespaced_deployment(name=name, namespace=namespace)
+
+    # Ensure the Pod template metadata and annotations exist
+    if not deployment.spec.template.metadata:
+        deployment.spec.template.metadata = client.V1ObjectMeta()
+    if not deployment.spec.template.metadata.annotations:
+        deployment.spec.template.metadata.annotations = {}
+
+    # Update the 'kubectl.kubernetes.io/restartedAt' annotation
+    # with the current timestamp to trigger a rollout restart
+    current_timestamp = datetime.datetime.utcnow()
+    current_timestamp = str(current_timestamp.isoformat("T") + "Z")
+
+    deployment.spec.template.metadata.annotations['kubectl.kubernetes.io/restartedAt'] = current_timestamp
+
+    print(deployment)
+
+    
+
+    # Patch the Deployment with the updated annotation
+    return apps_api.patch_namespaced_deployment(name=name, namespace=namespace, body=deployment, pretty='true')
 
 def add_deployment(namespace, name):
     doc = deployments[name]
@@ -88,6 +97,8 @@ def add_deployment(namespace, name):
 
 @app.post('/service/<service>/<state>')
 def change_service_status(service, state):
+    print("HERE", flush=True)
+
     try:
         if state == 'up':
             ret = add_deployment(os.environ['NAMESPACE'], service)
@@ -96,6 +107,7 @@ def change_service_status(service, state):
             ret = delete_deployment(os.environ['NAMESPACE'], service)
             return {'status': 'success'}, 200
         elif state == 'restart':
+            print(service)
             ret = restart_deployment(os.environ['NAMESPACE'], service)
             return {'status': 'success'}, 200
     except Exception as e:
