@@ -171,6 +171,7 @@ steps:
         | EVAL normalized_load = (TO_DOUBLE(load_1m) / TO_DOUBLE(cpucount)) * 100
         | EVAL mem_usage = (mem_used + mem_buffered + mem_reclaimable + mem_unreclaimable) * 100
         | EVAL disk_usage = max_disk_usage * 100
+        | WHERE cpu_usage IS NOT NULL
         | KEEP cpu_usage, normalized_load, mem_usage, disk_usage, `BUCKET(@timestamp, 1m)`
         | LIMIT 1000
     headers:

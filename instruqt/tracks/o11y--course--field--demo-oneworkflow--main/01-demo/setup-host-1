@@ -3,6 +3,7 @@ export $(curl http://kubernetes-vm:9000/env | xargs)
 
 export INSTRUQT_TRACK_SLUG=o11y--course--field--demo-oneworkflow--main
 export REPO=us-central1-docker.pkg.dev/elastic-sa/tbekiares
+export COURSE=o11y--course--field--demo-oneworkflow--main
 
 /opt/workshops/clone-code.sh -r ty-elastic/instruqt_$INSTRUQT_TRACK_SLUG -d false
 
@@ -20,6 +21,11 @@ git checkout 2.1.5
 
 kubectl create namespace "opentelemetry-demo"
 helm upgrade --namespace "opentelemetry-demo" --install "my-otel-demo" "open-telemetry/opentelemetry-demo" --version 0.38.3 -f kubernetes/elastic-helm/demo.yml
+
+# ------------- REMOTE
+
+export NAMESPACE=opentelemetry-operator-system
+envsubst < remote/remote.yaml | kubectl apply -f -
 
 # ------------- Load Balancer frontend-proxy
 
