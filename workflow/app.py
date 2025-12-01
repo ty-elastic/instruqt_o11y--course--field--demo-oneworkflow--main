@@ -24,6 +24,73 @@ class MyYAML(YAML):
         if inefficient:
             return stream.getvalue()
 
+
+def load_prompt(kibana_server, kibana_auth):
+
+    body = {
+        "limit": 50,
+        "page": 1,
+        "query": ""
+    }
+    
+    resp = requests.post(f"{kibana_server}/api/workflows/search",
+                        json=body,
+                        headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+    #print(resp.json())
+
+    workflow_id = None
+    
+    for workflow in resp.json()['results']:
+        try:
+            print(workflow['name'])
+            if workflow['name'] == 'remediation_restart_service':
+                workflow_id = workflow['id']
+                break
+        except:
+            print("exception")
+            
+    with open("prompt/instructions.xml", 'r') as instructions:
+        instructions_txt = instructions.read()  # Read the entire content of the file
+
+        
+        instructions_txt = instructions_txt.replace("{WORKFLOW_ID}", workflow_id)
+
+        with open("prompt/prompt.json", 'r') as prompt:
+            #content = file.read()
+            prompt = json.load(prompt)
+            prompt['text'] = instructions_txt
+
+            print(prompt)
+
+            # resp = requests.put(f"{kibana_server}/internal/observability_ai_assistant/kb/user_instructions",
+            #                     json=prompt,
+            #                     headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+            # print(resp.json())
+
+def load_knowledge(kibana_server, kibana_auth):
+    directory_path = "knowledge"
+    target_extension = ".json"
+
+    entries = []
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                with open(full_path, 'r') as fileo:
+                    #content = file.read()
+                    knowledge = json.load(fileo)
+                    entries.append(knowledge)
+    print(entries)
+    body = {
+        "entries": entries
+    }
+    resp = requests.post(f"{kibana_server}/internal/observability_ai_assistant/kb/entries/import",
+                        json=body,
+                        headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+    print(resp.json())
+
+
+
 def backup_workflows(kibana_server, kibana_auth):
     
     body = {
@@ -265,6 +332,12 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
         load_rules(kibana_host, auth, es_host)
     elif action == 'backup_workflows':
         backup_workflows(kibana_host, auth)
+    elif action == 'load_knowledge':
+        load_knowledge(kibana_host, auth)
+        print('done')
+    elif action == 'load_prompt':
+        load_prompt(kibana_host, auth)
+        print('done')
 
 if __name__ == '__main__':
     main()

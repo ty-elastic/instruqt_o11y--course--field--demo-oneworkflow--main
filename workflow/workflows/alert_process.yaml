@@ -5,6 +5,8 @@ consts:
   es_host: TBD
   kbn_auth: TBD
   kbn_host: TBD
+  snow_host: TBD
+  snow_auth: TBD
 description: Process o11y alerts and correlate to cases
 enabled: true
 name: alert_process

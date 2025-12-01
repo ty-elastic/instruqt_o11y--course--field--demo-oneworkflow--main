@@ -5,6 +5,8 @@ consts:
   es_host: TBD
   kbn_auth: TBD
   kbn_host: TBD
+  snow_host: TBD
+  snow_auth: TBD
 name: case_process
 version: '1'
 description: Process o11y cases
