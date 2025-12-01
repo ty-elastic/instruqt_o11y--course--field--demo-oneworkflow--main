@@ -240,6 +240,9 @@ collectors:
             - key: host.name
               from_attribute: '${env:OTEL_K8S_NODE_NAME}'
               action: upsert
+            - key: k8s.node.name
+              from_attribute: '${env:OTEL_K8S_NODE_NAME}'
+              action: upsert
         resourcedetection/system:
           # Detects resources from the system and EC2 instances.
           detectors: ["system", "ec2"]
@@ -354,20 +357,20 @@ collectors:
               metrics:
                 system.memory.utilization:
                   enabled: true
-            # process scraper is disabled for now: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/39423
-            #process:
-            #  mute_process_exe_error: true
-            #  mute_process_io_error: true
-            #  mute_process_user_error: true
-            #  metrics:
-            #    process.threads:
-            #      enabled: true
-            #    process.open_file_descriptors:
-            #      enabled: true
-            #    process.memory.utilization:
-            #      enabled: true
-            #    process.disk.operations:
-            #      enabled: true
+            process scraper is disabled for now: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/39423
+            process:
+             mute_process_exe_error: true
+             mute_process_io_error: true
+             mute_process_user_error: true
+             metrics:
+               process.threads:
+                 enabled: true
+               process.open_file_descriptors:
+                 enabled: true
+               process.memory.utilization:
+                 enabled: true
+               process.disk.operations:
+                 enabled: true
             network: {}
             processes: {}
             load: {}
