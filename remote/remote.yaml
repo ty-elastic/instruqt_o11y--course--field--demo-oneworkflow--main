@@ -73,6 +73,7 @@ spec:
     - name: remote
       port: 43210
       targetPort: 10000
+  type: LoadBalancer
   selector:
     app: trading
     service: remote
