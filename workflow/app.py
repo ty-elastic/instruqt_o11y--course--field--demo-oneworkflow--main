@@ -62,10 +62,10 @@ def load_prompt(kibana_server, kibana_auth):
 
             print(prompt)
 
-            # resp = requests.put(f"{kibana_server}/internal/observability_ai_assistant/kb/user_instructions",
-            #                     json=prompt,
-            #                     headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-            # print(resp.json())
+            resp = requests.put(f"{kibana_server}/internal/observability_ai_assistant/kb/user_instructions",
+                                json=prompt,
+                                headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+            print(resp.json())
 
 def load_knowledge(kibana_server, kibana_auth):
     directory_path = "knowledge"

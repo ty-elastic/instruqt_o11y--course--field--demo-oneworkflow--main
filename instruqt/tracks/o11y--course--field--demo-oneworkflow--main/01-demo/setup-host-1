@@ -24,7 +24,7 @@ helm upgrade --namespace "opentelemetry-demo" --install "my-otel-demo" "open-tel
 
 # ------------- REMOTE
 
-export NAMESPACE=opentelemetry-operator-system
+export NAMESPACE=opentelemetry-demo
 envsubst < remote/remote.yaml | kubectl apply -f -
 
 # ------------- Load Balancer frontend-proxy

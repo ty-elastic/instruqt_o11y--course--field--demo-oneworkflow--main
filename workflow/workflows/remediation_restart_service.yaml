@@ -1,5 +1,5 @@
 name: remediation_restart_service
-enabled: tru_
+enabled: true
 consts:
   remote_host: http://host-1:43210
   ai_connector: TBD
