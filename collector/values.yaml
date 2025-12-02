@@ -518,6 +518,7 @@ collectors:
             processors:
               - batch
               - resource/hostname
+              - resource/environment
             exporters:
               - otlp/gateway
   #  Gateway is a K8s deployment EDOT collector focused on processing and
