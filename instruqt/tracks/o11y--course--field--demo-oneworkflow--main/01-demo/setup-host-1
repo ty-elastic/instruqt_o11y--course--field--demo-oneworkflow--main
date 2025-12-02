@@ -22,11 +22,6 @@ git checkout 2.1.5
 kubectl create namespace "opentelemetry-demo"
 helm upgrade --namespace "opentelemetry-demo" --install "my-otel-demo" "open-telemetry/opentelemetry-demo" --version 0.38.3 -f kubernetes/elastic-helm/demo.yml
 
-# ------------- REMOTE
-
-export NAMESPACE=opentelemetry-demo
-envsubst < remote/remote.yaml | kubectl apply -f -
-
 # ------------- Load Balancer frontend-proxy
 
 echo '
@@ -46,3 +41,35 @@ spec:
   type: LoadBalancer' > /workspace/frontendproxy-lb.yaml
 
 kubectl apply -f /workspace/frontendproxy-lb.yaml
+
+# ------------- REMOTE
+
+cd /workspace/workshop
+export NAMESPACE=opentelemetry-demo
+envsubst < remote/remote.yaml | kubectl apply -f -
+/workspace/
+
+# ------------- DASHBOARD
+
+# kubectl delete namespace kubernetes-dashboard
+# helm install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --create-namespace --set enableInsecureLogin=true --set protocolHttp=true
+
+# echo '
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: kubernetes-dashboard-ext
+#   namespace: kubernetes-dashboard
+# spec:
+#   ports:
+#   - name: kubernetes-dashboard
+#     port: 34443
+#     protocol: TCP
+#     targetPort: 8443
+#   selector:
+#     app.kubernetes.io/component: app
+#     app.kubernetes.io/instance: kubernetes-dashboard
+#     app.kubernetes.io/name: kong
+#   type: LoadBalancer' > /workspace/kubernetes-dashboard.yaml
+
+# kubectl apply -f /workspace/kubernetes-dashboard.yaml
