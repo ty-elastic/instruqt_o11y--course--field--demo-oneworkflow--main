@@ -225,7 +225,7 @@ def load_workflows(kibana_server, kibana_auth, es_host, ai_connector, ai_proxy, 
 
 #
 
-def load_rules(kibana_server, kibana_auth, es_host):
+def load_rules(kibana_server, kibana_auth, es_host, connect_alerts=True):
 
     body = {
         "limit": 50,
@@ -253,7 +253,10 @@ def load_rules(kibana_server, kibana_auth, es_host):
                 with open(full_path, 'r') as fileo:
                     #content = file.read()
                     rule = json.load(fileo)
-                    rule['actions'][0]['params']['subActionParams']['workflowId'] = alert_queue_id
+                    if connect_alerts:
+                        rule['actions'][0]['params']['subActionParams']['workflowId'] = alert_queue_id
+                    else:
+                        del rule['actions']
                     print(rule)
                     resp = requests.post(f"{kibana_server}/api/alerting/rule",
                                         json=rule,
@@ -292,12 +295,13 @@ def run_setup(kibana_server, kibana_auth, es_host):
 @click.option('--es_host', default="", help='address of elasticsearch server')
 @click.option('--es_apikey', default="", help='apikey for auth')
 @click.option('--es_authbasic', default="", help='basic for auth')
+@click.option('--connect_alerts', default=True, help='connect alerts to workflow')
 @click.option('--snow_host', default="TBD", help='snow host')
 @click.option('--snow_authbasic', default="TBD", help='basic for auth')
 @click.option('--ai_connector', default="Elastic-Managed-LLM", help='ai connector id')
 @click.option('--ai_proxy', default="https://tbekiares-demo-aiassistantv2-1059491012611.us-central1.run.app", help='ai proxy host')
 @click.argument('action')
-def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, action, snow_host, snow_authbasic):
+def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, ai_connector, ai_proxy, action, snow_host, snow_authbasic):
     
     config = dotenv_values()
     for key, value in config.items():
@@ -329,7 +333,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, ai_connector, ai_proxy, 
         load_workflows(kibana_host, auth, es_host, ai_connector, ai_proxy, snow_host, snow_auth)
         run_setup(kibana_host, auth, es_host)
     elif action == 'load_alerts':
-        load_rules(kibana_host, auth, es_host)
+        load_rules(kibana_host, auth, es_host, connect_alerts)
     elif action == 'backup_workflows':
         backup_workflows(kibana_host, auth)
     elif action == 'load_knowledge':

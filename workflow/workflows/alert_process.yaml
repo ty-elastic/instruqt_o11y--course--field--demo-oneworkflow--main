@@ -13,7 +13,7 @@ name: alert_process
 tags:
 - automated_observability_triage
 triggers:
-- enabled: true
+- enabled: false
   type: alert
 settings:
   timeout: 10m

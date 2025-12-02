@@ -35,7 +35,7 @@ steps:
   type: http
   with:
     body:
-      comment: Attempted `{{inputs.service_action}}` of `{{inputs.service_name}}` using `ansible-restart-service`
+      comment: Attempted `{{inputs.service_action}}` of `{{inputs.service_name}}`
       owner: observability
       type: user
     headers:

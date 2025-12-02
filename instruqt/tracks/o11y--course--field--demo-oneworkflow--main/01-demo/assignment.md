@@ -10,7 +10,7 @@ tabs:
   hostname: kubernetes-vm
   path: /app/apm/service-map
   port: 30001
-- id: sw6mcyxmqgcv
+- id: mdp2y75l0s6c
   title: Elasticsearch (breakout)
   type: service
   hostname: kubernetes-vm
