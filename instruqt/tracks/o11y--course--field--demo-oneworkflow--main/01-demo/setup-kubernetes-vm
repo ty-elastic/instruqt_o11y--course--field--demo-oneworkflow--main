@@ -11,6 +11,27 @@ mkdir -p /workspace/workshop
 git clone $GITHUB_REPO /workspace/workshop
 cd /workspace/workshop
 
+# ------------- BASEURL
+
+echo "Initializing Base URL"
+init_base_url() {
+    local http_status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$KIBANA_URL/internal/kibana/settings" \
+    --header 'Content-Type: application/json' \
+    --header "kbn-xsrf: true" \
+    --header "Authorization: Basic $ELASTICSEARCH_AUTH_BASE64" \
+    --header 'x-elastic-internal-origin: Kibana' \
+    -d '{"changes":{"server.publicBaseUrl":"http://kubernetes-vm:30001"}}')
+
+    if echo $http_status | grep -q '^2'; then
+        echo "BaseURL successfully initialized: $http_status"
+        return 0
+    else
+        echo "Failed to initialize BaseURL. HTTP status: $http_status"
+        return 1
+    fi
+}
+retry_command_lin init_base_url
+
 # ------------- VIEW
 
 source /workspace/workshop/instruqt/scripts/elastic-view.sh
