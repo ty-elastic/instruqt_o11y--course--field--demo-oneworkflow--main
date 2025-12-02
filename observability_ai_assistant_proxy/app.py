@@ -149,6 +149,15 @@ def _observability_ai_assistant_chat_complete_private(body, kibana_server, kiban
                         
                         if 'result' in output['result']:
                             if (output['result']['result'] == 'success') or (i >= (retries-1)):
+
+                                marker_index = last_response.find('```json')
+                                # If the marker is found, slice the string up to that index
+                                if marker_index != -1:
+                                    output['lastMessage'] = last_response[:marker_index]
+                                else:
+                                    # If the marker is not found, the original string remains
+                                    output['lastMessage'] = last_response
+
                                 return output, 200
                 else:
                     return output, 200
