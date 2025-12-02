@@ -64,9 +64,8 @@ def _observability_ai_assistant_chat_complete_private(body, kibana_server, kiban
         body['result'] = True
         
     if body['result'] == True:
-        modified_body['instructions'].append("At the end of your response, output the fields requested in a single JSON object, prefixed with '```json' and postfixed with '```'.  The value of the fields is intended to be read by humans, and should not include nested json or xml, but can include markdown.")
-        modified_body['instructions'].append("If you reach a function call limit while trying to answer a request, output a field 'result' with a value of 'function_call_limit_exceeded', otherwise output a field 'result' with a value of 'success'.")
-    
+        modified_body['instructions'].append("At the end of your response if you did not reach a function limit while trying to answer the request, output the fields requested in a single JSON object, prefixed with '```json' and postfixed with '```'.  The value of the fields is intended to be read by humans, and should not include nested json or xml, but can include markdown.")
+
     modified_body['disableFunctions'] = False
 
     modified_body['scopes'] = ['observability']
@@ -143,22 +142,26 @@ def _observability_ai_assistant_chat_complete_private(body, kibana_server, kiban
                         extracted_content = extracted_content.replace('\\n', '')
                         extracted_content = extracted_content.replace('\\"', '"')
                         
+                        print("HERE111")
                         decoded_content = tjson.tolerate(extracted_content)
                         output['result'] = decoded_content
                         print(decoded_content)
-                        
-                        if 'result' in output['result']:
-                            if (output['result']['result'] == 'success') or (i >= (retries-1)):
+                        print("HER!E")
 
-                                marker_index = last_response.find('```json')
-                                # If the marker is found, slice the string up to that index
-                                if marker_index != -1:
-                                    output['lastMessage'] = last_response[:marker_index]
-                                else:
-                                    # If the marker is not found, the original string remains
-                                    output['lastMessage'] = last_response
+                        print("HER!E2")
 
-                                return output, 200
+                        marker_index = last_response.find("```json")
+                        # If the marker is found, slice the string up to that index
+                        if marker_index != -1:
+                            print("HER!E3")
+                            output['lastMessage'] = last_response[:marker_index]
+                            print("HERE1112")
+                            print(output['lastMessage'])
+                        else:
+                            # If the marker is not found, the original string remains
+                            output['lastMessage'] = last_response
+
+                        return output, 200
                 else:
                     return output, 200
 
@@ -199,5 +202,3 @@ def observability_ai_assistant_chat_complete():
     
     response, code = _observability_ai_assistant_chat_complete_private(body, kibana_server, kibana_auth)
     return response, code
-
-

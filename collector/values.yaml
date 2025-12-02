@@ -207,6 +207,11 @@ collectors:
           tls:
             insecure: true
       processors:
+        resource/environment:
+          attributes:
+            - key: deployment.environment.name
+              from_attribute: k8s.namespace.name
+              action: upsert
         # [Batch Processor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor/batchprocessor)
         # inherit any values from helm chart
         batch: {}
@@ -469,6 +474,7 @@ collectors:
               - resourcedetection/aks
               - resource/hostname
               - resource/cloud
+              - resource/environment
             exporters:
               - otlp/gateway
           metrics/node/otel:
@@ -484,6 +490,7 @@ collectors:
               - resourcedetection/aks
               - resource/hostname
               - resource/cloud
+              - resource/environment
             exporters:
               # - debug
               - otlp/gateway
@@ -493,6 +500,7 @@ collectors:
             processors:
               - batch/metrics
               - resource/hostname
+              - resource/environment
             exporters:
               - otlp/gateway
           logs/apm:
@@ -501,6 +509,7 @@ collectors:
             processors:
               - batch
               - resource/hostname
+              - resource/environment
             exporters:
               - otlp/gateway
           traces/apm:

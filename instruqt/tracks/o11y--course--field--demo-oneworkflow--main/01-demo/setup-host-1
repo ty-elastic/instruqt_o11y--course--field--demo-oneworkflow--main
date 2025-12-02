@@ -47,7 +47,7 @@ kubectl apply -f /workspace/frontendproxy-lb.yaml
 cd /workspace/workshop
 export NAMESPACE=opentelemetry-demo
 envsubst < remote/remote.yaml | kubectl apply -f -
-/workspace/
+cd /workspace/
 
 # ------------- DASHBOARD
 
